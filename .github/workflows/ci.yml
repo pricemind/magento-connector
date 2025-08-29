@@ -37,7 +37,7 @@ jobs:
       
     - name: Cache Composer packages
       id: composer-cache
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vendor
         key: ${{ runner.os }}-php-${{ matrix.php-version }}-standalone-${{ hashFiles('**/composer-dev.json') }}
@@ -85,7 +85,7 @@ jobs:
         rm -f composer.lock
         
     - name: Cache Composer packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: vendor
         key: ${{ runner.os }}-php-8.1-standalone-${{ hashFiles('**/composer-dev.json') }}
@@ -104,7 +104,7 @@ jobs:
         
     - name: Upload PHPCS results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: phpcs-report
         path: phpcs-report.xml
@@ -213,7 +213,7 @@ jobs:
           app/ composer.json
           
     - name: Upload package artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: magento-connector-package
         path: dist/
@@ -229,7 +229,7 @@ jobs:
       uses: actions/checkout@v4
       
     - name: Download package artifact
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: magento-connector-package
         path: dist/
