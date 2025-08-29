@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<ruleset name="Pricemind Magento Connector">
+    <description>PHP_CodeSniffer configuration for Pricemind Magento Connector</description>
+
+    <!-- Include the PSR-12 standard -->
+    <rule ref="PSR12"/>
+
+    <!-- Additional Magento-specific rules -->
+    <rule ref="Generic.Arrays.DisallowLongArraySyntax"/>
+    <rule ref="Generic.Classes.DuplicateClassName"/>
+    <rule ref="Generic.CodeAnalysis.EmptyStatement"/>
+    <rule ref="Generic.CodeAnalysis.ForLoopShouldBeWhileLoop"/>
+    <rule ref="Generic.CodeAnalysis.ForLoopWithTestFunctionCall"/>
+    <rule ref="Generic.CodeAnalysis.JumbledIncrementer"/>
+    <rule ref="Generic.CodeAnalysis.UnconditionalIfStatement"/>
+    <rule ref="Generic.CodeAnalysis.UnnecessaryFinalModifier"/>
+    <rule ref="Generic.CodeAnalysis.UnusedFunctionParameter"/>
+    <rule ref="Generic.CodeAnalysis.UselessOverridingMethod"/>
+    
+    <!-- Files to check -->
+    <file>app/code/Stellion/Pricemind</file>
+    
+    <!-- Exclude test files from some rules -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName.NotCamelCaps">
+        <exclude-pattern>*/Test/*</exclude-pattern>
+    </rule>
+    
+    <!-- Exclude registration file -->
+    <exclude-pattern>app/code/Stellion/Pricemind/registration.php</exclude-pattern>
+    
+    <!-- Show progress -->
+    <arg name="report" value="full"/>
+    <arg name="colors"/>
+    <arg value="p"/>
+    
+    <!-- Use cache for faster subsequent runs -->
+    <arg name="cache" value=".phpcs-cache"/>
+    
+    <!-- Parallel processing -->
+    <arg name="parallel" value="8"/>
+</ruleset>

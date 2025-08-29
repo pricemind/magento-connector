@@ -1,0 +1,86 @@
+<?php
+/**
+ * PHPStan stubs for Magento Framework classes
+ * These stubs help PHPStan understand Magento-specific code patterns
+ */
+
+namespace Magento\Framework\Event {
+    class Observer {
+        public function getEvent(): Event {}
+    }
+    
+    class Event {
+        public function getProduct(): \Magento\Catalog\Model\Product {}
+        public function getData(string $key = null) {}
+    }
+}
+
+namespace Magento\Catalog\Model {
+    class Product {
+        public function getSku(): string {}
+        public function getStoreId(): int {}
+        public function getOrigData(string $key = null) {}
+        public function getData(string $key = null) {}
+    }
+}
+
+namespace Magento\Store\Model {
+    class Store {
+        public function getWebsite(): Website {}
+        public function getBaseCurrencyCode(): string {}
+    }
+    
+    class Website {
+        public function getCode(): string {}
+    }
+    
+    interface StoreManagerInterface {
+        public function getStore(int $storeId = null): Store {}
+    }
+}
+
+namespace Magento\Framework\App\Config {
+    interface ScopeConfigInterface {
+        public function getValue(string $path, string $scopeType = null, string $scopeCode = null) {}
+    }
+}
+
+namespace Magento\Framework\HTTP\Client {
+    class Curl {
+        public function setHeaders(array $headers): void {}
+        public function setTimeout(int $timeout): void {}
+        public function setConnectTimeout(int $timeout): void {}
+        public function setOption(int $option, $value): void {}
+        public function get(string $url): void {}
+        public function post(string $url, string $data): void {}
+        public function getStatus(): int {}
+        public function getBody(): string {}
+    }
+}
+
+namespace Magento\Framework\Serialize\Serializer {
+    class Json {
+        public function serialize($data): string {}
+        public function unserialize(string $data) {}
+    }
+}
+
+namespace Magento\Framework\Encryption {
+    interface EncryptorInterface {
+        public function decrypt(string $data): string {}
+    }
+}
+
+namespace Magento\Framework\App {
+    interface RequestInterface {
+        public function getParam(string $name, $defaultValue = null) {}
+    }
+}
+
+namespace Psr\Log {
+    interface LoggerInterface {
+        public function error(string $message, array $context = []): void {}
+        public function warning(string $message, array $context = []): void {}
+        public function info(string $message, array $context = []): void {}
+    }
+}

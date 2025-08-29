@@ -29,3 +29,14 @@ auth.json
 
 # Logs
 *.log
+
+# Test artifacts
+coverage/
+coverage.xml
+.phpunit.result.cache
+.phpcs-cache
+phpcs-report.xml
+
+# Build artifacts
+dist/
+build/

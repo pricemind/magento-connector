@@ -1,0 +1,236 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        php-version: ['7.4', '8.0', '8.1', '8.2']
+        
+    name: PHP ${{ matrix.php-version }} Tests
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php-version }}
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_sqlite, dom, filter, gd, hash, json, mbstring, pcre, pdo, zlib
+        coverage: xdebug
+        
+    - name: Validate composer.json and composer.lock
+      run: composer validate --strict
+      
+    - name: Cache Composer packages
+      id: composer-cache
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-${{ matrix.php-version }}-${{ hashFiles('**/composer.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-php-${{ matrix.php-version }}-
+          
+    - name: Install dependencies
+      run: |
+        composer install --prefer-dist --no-progress --no-suggest --no-interaction
+        composer require --dev phpunit/phpunit "^9.0" --no-interaction
+        
+    - name: Create test directories
+      run: |
+        mkdir -p var/log
+        mkdir -p var/cache
+        
+    - name: Run PHPUnit tests
+      run: |
+        vendor/bin/phpunit --configuration phpunit.xml --coverage-clover=coverage.xml --coverage-text
+        
+    - name: Upload coverage reports to Codecov
+      if: matrix.php-version == '8.1'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        flags: unittests
+        name: codecov-umbrella
+        
+  code-quality:
+    runs-on: ubuntu-latest
+    name: Code Quality Analysis
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, ctype, iconv, intl
+        
+    - name: Cache Composer packages
+      uses: actions/cache@v3
+      with:
+        path: vendor
+        key: ${{ runner.os }}-php-8.1-${{ hashFiles('**/composer.lock') }}
+        
+    - name: Install dependencies
+      run: |
+        composer install --prefer-dist --no-progress --no-interaction
+        composer require --dev phpstan/phpstan "^1.0" --no-interaction
+        composer require --dev squizlabs/php_codesniffer "^3.7" --no-interaction
+        
+    - name: Run PHPStan
+      run: |
+        vendor/bin/phpstan analyse app/code/Stellion/Pricemind --level=5 --no-progress --error-format=github
+        
+    - name: Run PHP_CodeSniffer
+      run: |
+        vendor/bin/phpcs app/code/Stellion/Pricemind --standard=PSR12 --report=checkstyle --report-file=phpcs-report.xml
+        
+    - name: Upload PHPCS results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: phpcs-report
+        path: phpcs-report.xml
+        
+  magento-compatibility:
+    runs-on: ubuntu-latest
+    name: Magento Compatibility Check
+    
+    strategy:
+      matrix:
+        magento-version: ['2.4.3', '2.4.4', '2.4.5', '2.4.6']
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        extensions: mbstring, xml, ctype, iconv, intl, pdo_mysql, gd, soap, zip, bcmath, sockets
+        
+    - name: Create Magento project
+      run: |
+        composer create-project --repository-url=https://repo.magento.com/ magento/project-community-edition=${{ matrix.magento-version }} magento --no-install
+        cd magento
+        composer config repositories.local path ../
+        composer require "pricemind/magento-connector:*" --no-install
+        
+    - name: Install Magento with module
+      run: |
+        cd magento
+        composer install --no-dev --optimize-autoloader
+        
+    - name: Check module registration
+      run: |
+        cd magento
+        php bin/magento module:status Stellion_Pricemind
+        
+    - name: Enable module
+      run: |
+        cd magento
+        php bin/magento module:enable Stellion_Pricemind
+        php bin/magento setup:upgrade --keep-generated
+        
+  security-scan:
+    runs-on: ubuntu-latest
+    name: Security Scan
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        
+    - name: Install dependencies
+      run: composer install --no-dev --optimize-autoloader
+      
+    - name: Run security check
+      run: |
+        composer require --dev sensiolabs/security-checker --no-interaction
+        vendor/bin/security-checker security:check composer.lock
+        
+  build:
+    runs-on: ubuntu-latest
+    name: Build Package
+    needs: [test, code-quality]
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.1'
+        
+    - name: Install dependencies
+      run: composer install --no-dev --optimize-autoloader
+      
+    - name: Create package
+      run: |
+        mkdir -p dist
+        tar -czf dist/pricemind-magento-connector-${{ github.sha }}.tar.gz \
+          --exclude='Test' \
+          --exclude='.git*' \
+          --exclude='dist' \
+          --exclude='*.md' \
+          app/ composer.json
+          
+    - name: Upload package artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: magento-connector-package
+        path: dist/
+        
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy to Marketplace
+    needs: build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download package artifact
+      uses: actions/download-artifact@v3
+      with:
+        name: magento-connector-package
+        path: dist/
+        
+    - name: Create GitHub Release
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Automated release of Pricemind Magento Connector
+          
+          ## Changes
+          - See commit history for detailed changes
+          
+          ## Installation
+          ```bash
+          composer require pricemind/magento-connector
+          ```
+        draft: false
+        prerelease: false
