@@ -11,11 +11,10 @@
     },
     "autoload": {
         "files": [
-            "registration.php"
+            "app/code/Stellion/Pricemind/registration.php"
         ],
         "psr-4": {
-            "Stellion\\Pricemind\\": ""
+            "Stellion\\Pricemind\\": "app/code/Stellion/Pricemind/"
         }
     }
 }
-

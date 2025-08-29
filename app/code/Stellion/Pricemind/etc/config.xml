@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <stellion_pricemind>
+            <api>
+                <base_url>https://api.pricemind.io/</base_url>
+                <source_is_magento>0</source_is_magento>
+                <source_type></source_type>
+                <source_title></source_title>
+            </api>
+        </stellion_pricemind>
+    </default>
+</config>
+
+

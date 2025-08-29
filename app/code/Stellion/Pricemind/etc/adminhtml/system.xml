@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="pricemind" translate="label" sortOrder="250">
+            <label>Pricemind</label>
+        </tab>
+        <section id="stellion_pricemind" translate="label" type="text" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="0">
+            <label>API</label>
+            <tab>pricemind</tab>
+            <resource>Stellion_Pricemind::config</resource>
+            <group id="api" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                <label>Settings</label>
+                <field id="base_url" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Base URL</label>
+                    <comment>Default: https://api.pricemind.io/</comment>
+                </field>
+                <field id="access_key" translate="label" type="obscure" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>API Access Key</label>
+                    <backend_model>Magento\Config\Model\Config\Backend\Encrypted</backend_model>
+                    <comment>Paste the API key from Pricemind.</comment>
+                </field>
+                <field id="channel_id" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Channel</label>
+                    <source_model>Stellion\Pricemind\Model\Config\Source\Channels</source_model>
+                    <frontend_model>Stellion\Pricemind\Block\Adminhtml\System\Config\Form\Field\Channel</frontend_model>
+                    <backend_model>Stellion\Pricemind\Model\Config\Backend\Channel</backend_model>
+                    <validate>required-entry</validate>
+                    <comment>Save after setting API key to load channels.</comment>
+                </field>
+                <field id="source_is_magento" translate="label" type="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Detected Source is Magento</label>
+                </field>
+                <field id="source_type" translate="label" type="label" sortOrder="41" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Source Type</label>
+                </field>
+                <field id="source_title" translate="label" type="label" sortOrder="42" showInDefault="1" showInWebsite="1" showInStore="0">
+                    <label>Source Title</label>
+                </field>
+                <!-- Removed special_from/to config fields, using static machine names in observer -->
+            </group>
+        </section>
+    </system>
+</config>
+
+

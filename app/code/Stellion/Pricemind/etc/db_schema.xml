@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="stellion_pricemind_failed_request" resource="default" engine="innodb" comment="Pricemind Failed Requests">
+        <column xsi:type="int" name="entity_id" padding="10" unsigned="true" nullable="false" identity="true" comment="Entity ID"/>
+        <column xsi:type="varchar" name="endpoint" nullable="false" length="255" comment="Target Endpoint"/>
+        <column xsi:type="varchar" name="method" nullable="false" length="16" comment="HTTP Method"/>
+        <column xsi:type="text" name="headers" nullable="true" comment="Headers JSON"/>
+        <column xsi:type="text" name="payload" nullable="false" comment="Payload JSON"/>
+        <column xsi:type="text" name="error" nullable="true" comment="Last Error Message"/>
+        <column xsi:type="int" name="retry_count" padding="10" unsigned="true" nullable="false" default="0" comment="Retry Count"/>
+        <column xsi:type="smallint" name="status" unsigned="true" nullable="false" default="0" comment="Status: 0=pending,1=retrying,2=abandoned,3=sent"/>
+        <column xsi:type="timestamp" name="next_attempt_at" nullable="true" default="NULL" on_update="false" comment="Next Attempt Timestamp"/>
+        <column xsi:type="timestamp" name="created_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="false" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" nullable="false" default="CURRENT_TIMESTAMP" on_update="true" comment="Updated At"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="entity_id"/>
+        </constraint>
+
+        <index referenceId="PRICEMIND_FAILED_REQUEST_STATUS_NEXTATTEMPT" indexType="btree">
+            <column name="status"/>
+            <column name="next_attempt_at"/>
+        </index>
+    </table>
+</schema>
+
+

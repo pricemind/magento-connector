@@ -6,7 +6,7 @@
                 <resource id="Magento_Backend::stores">
                     <resource id="Magento_Backend::stores_settings">
                         <resource id="Magento_Config::config">
-                            <resource id="Stellion_Pricemind::config" title="Stellion Pricemind" sortOrder="100"/>
+                            <resource id="Stellion_Pricemind::config" title="Pricemind" sortOrder="100"/>
                         </resource>
                     </resource>
                 </resource>
