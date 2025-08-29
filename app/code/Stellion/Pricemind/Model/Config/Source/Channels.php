@@ -40,5 +40,3 @@ class Channels implements OptionSourceInterface
         return $options;
     }
 }
-
-

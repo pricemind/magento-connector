@@ -1,4 +1,5 @@
 <?php
+
 namespace Stellion\Pricemind\Model;
 
 use Magento\Framework\HTTP\Client\Curl;
@@ -69,4 +70,3 @@ class Sender
         }
     }
 }
-

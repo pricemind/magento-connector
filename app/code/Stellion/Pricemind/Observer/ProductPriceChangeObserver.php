@@ -1,4 +1,5 @@
 <?php
+
 namespace Stellion\Pricemind\Observer;
 
 use Magento\Framework\Event\Observer;

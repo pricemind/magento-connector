@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<ruleset name="Pricemind Magento Connector - Standalone">
+    <description>Standalone PHP_CodeSniffer configuration</description>
+
+    <!-- Include the PSR-12 standard -->
+    <rule ref="PSR12"/>
+
+    <!-- Files to check -->
+    <file>app/code/Stellion/Pricemind</file>
+    
+    <!-- Exclude registration file -->
+    <exclude-pattern>app/code/Stellion/Pricemind/registration.php</exclude-pattern>
+    
+    <!-- Show progress -->
+    <arg name="report" value="summary"/>
+    <arg name="colors"/>
+    <arg value="p"/>
+</ruleset>

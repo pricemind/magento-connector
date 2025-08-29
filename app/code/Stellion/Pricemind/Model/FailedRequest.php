@@ -11,5 +11,3 @@ class FailedRequest extends AbstractModel
         $this->_init(\Stellion\Pricemind\Model\ResourceModel\FailedRequest::class);
     }
 }
-
-

@@ -11,5 +11,3 @@ class FailedRequest extends AbstractDb
         $this->_init('stellion_pricemind_failed_request', 'entity_id');
     }
 }
-
-

@@ -73,8 +73,12 @@ class Channel extends Value
                     // holders already declared above
                     // Support both mapping.custom_field and mapping.custom_fields
                     $cfMap = [];
-                    if (isset($mapping['custom_field'])) { $cfMap = $mapping['custom_field']; }
-                    if (empty($cfMap) && isset($mapping['custom_fields'])) { $cfMap = $mapping['custom_fields']; }
+                    if (isset($mapping['custom_field'])) {
+                        $cfMap = $mapping['custom_field'];
+                    }
+                    if (empty($cfMap) && isset($mapping['custom_fields'])) {
+                        $cfMap = $mapping['custom_fields'];
+                    }
                     if (is_array($cfMap)) {
                         // Case 1: associative map attribute => machine_name
                         if ($specialFromAttr !== '' && isset($cfMap[$specialFromAttr]) && is_string($cfMap[$specialFromAttr])) {
@@ -86,28 +90,40 @@ class Channel extends Value
                         // Case 1b: associative map machine_name => attribute (inverse)
                         if ($detectedFromMachine === '' && $specialFromAttr !== '') {
                             foreach ($cfMap as $k => $v) {
-                                if (is_string($k) && is_string($v) && $v === $specialFromAttr) { $detectedFromMachine = (string)$k; break; }
+                                if (is_string($k) && is_string($v) && $v === $specialFromAttr) {
+                                    $detectedFromMachine = (string)$k;
+                                    break;
+                                }
                             }
                         }
                         if ($detectedToMachine === '' && $specialToAttr !== '') {
                             foreach ($cfMap as $k => $v) {
-                                if (is_string($k) && is_string($v) && $v === $specialToAttr) { $detectedToMachine = (string)$k; break; }
+                                if (is_string($k) && is_string($v) && $v === $specialToAttr) {
+                                    $detectedToMachine = (string)$k;
+                                    break;
+                                }
                             }
                         }
                         // Case 2: list of objects with attribute/machine_name
                         if (($detectedFromMachine === '' || $detectedToMachine === '')) {
                             foreach ($cfMap as $item) {
-                                if (!is_array($item)) { continue; }
+                                if (!is_array($item)) {
+                                    continue;
+                                }
                                 $attr = isset($item['attribute']) ? (string)$item['attribute'] : '';
                                 $machine = isset($item['machine_name']) ? (string)$item['machine_name'] : '';
-                                if ($attr === '' || $machine === '') { continue; }
+                                if ($attr === '' || $machine === '') {
+                                    continue;
+                                }
                                 if ($detectedFromMachine === '' && $specialFromAttr !== '' && $attr === $specialFromAttr) {
                                     $detectedFromMachine = $machine;
                                 }
                                 if ($detectedToMachine === '' && $specialToAttr !== '' && $attr === $specialToAttr) {
                                     $detectedToMachine = $machine;
                                 }
-                                if ($detectedFromMachine !== '' && $detectedToMachine !== '') { break; }
+                                if ($detectedFromMachine !== '' && $detectedToMachine !== '') {
+                                    break;
+                                }
                             }
                         }
                     }
@@ -126,7 +142,6 @@ class Channel extends Value
                     if ($detectedToMachine === '' && $specialToAttr !== '') {
                         $detectedToMachine = $specialToAttr;
                     }
-
                 }
 
                 // Persist detection results at website scope
@@ -146,5 +161,3 @@ class Channel extends Value
         return parent::afterSave();
     }
 }
-
-

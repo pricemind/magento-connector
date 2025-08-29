@@ -43,5 +43,3 @@ class Channel extends Field
         return parent::_getElementHtml($element);
     }
 }
-
-

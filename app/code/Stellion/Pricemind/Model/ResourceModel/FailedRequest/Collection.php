@@ -13,5 +13,3 @@ class Collection extends AbstractCollection
         $this->_init(\Stellion\Pricemind\Model\FailedRequest::class, \Stellion\Pricemind\Model\ResourceModel\FailedRequest::class);
     }
 }
-
-
