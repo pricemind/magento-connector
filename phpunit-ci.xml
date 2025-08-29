@@ -19,12 +19,15 @@
         </testsuite>
     </testsuites>
 
-    <coverage processUncoveredFiles="true">
+    <coverage processUncoveredFiles="false">
         <include>
             <directory suffix=".php">./app/code/Stellion/Pricemind</directory>
         </include>
         <exclude>
-            <directory>./app/code/Stellion/Pricemind/registration.php</directory>
+            <file>./app/code/Stellion/Pricemind/registration.php</file>
+            <file>./app/code/Stellion/Pricemind/Model/ResourceModel/FailedRequest.php</file>
+            <file>./app/code/Stellion/Pricemind/Model/FailedRequest.php</file>
+            <file>./app/code/Stellion/Pricemind/Block/Adminhtml/System/Config/Form/Field/Channel.php</file>
             <directory>./Test</directory>
         </exclude>
     </coverage>

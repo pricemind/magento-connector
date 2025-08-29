@@ -63,8 +63,5 @@ namespace Stellion\Pricemind\Model {
     }
 }
 
-namespace Stellion\Pricemind\Model\ResourceModel {
-    class FailedRequest {
-        public function save($model) { return $this; }
-    }
-}
+// Note: Removed mock for Stellion\Pricemind\Model\ResourceModel\FailedRequest
+// to avoid conflict with the real class

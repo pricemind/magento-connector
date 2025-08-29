@@ -29,7 +29,7 @@ class Channel extends Field
         parent::__construct($context, $data);
     }
 
-    protected function _getElementHtml(AbstractElement $element)
+    protected function _getElementHtml($element)
     {
         $websiteCode = $this->request->getParam('website');
         $scope = $websiteCode ? ScopeInterface::SCOPE_WEBSITE : ScopeConfigInterface::SCOPE_TYPE_DEFAULT;
