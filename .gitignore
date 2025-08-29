@@ -1,0 +1,31 @@
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Magento specific
+var/
+pub/media/
+pub/static/
+generated/
+vendor/
+auth.json
+
+# Development files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
