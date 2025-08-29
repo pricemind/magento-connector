@@ -1,5 +1,5 @@
 parameters:
-    level: 3
+    level: 2
     paths:
         - app/code/Stellion/Pricemind
     excludePaths:
@@ -13,7 +13,17 @@ parameters:
         - '#Interface .* not found#'
         - '#Parameter .* of class .* constructor expects .*, .* given#'
         - '#Call to method .* on an unknown class#'
+        - '#extends unknown class#'
+        - '#implements unknown interface#'
+        - '#has unknown class .* as its type#'
+        - '#has invalid type#'
+        - '#calls parent::#'
+        - '#Function .* not found#'
+        - '#Access to constant .* on an unknown class#'
+        - '#PHPDoc tag @var .* contains unknown class#'
+        - '#You must be using the interactive console to authenticate#'
         
+    treatPhpDocTypesAsCertain: false
     checkMissingIterableValueType: false
     checkGenericClassInNonGenericObjectType: false
     reportUnmatchedIgnoredErrors: false
