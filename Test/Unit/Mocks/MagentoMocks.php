@@ -107,8 +107,12 @@ namespace Magento\Framework\App {
 namespace Magento\Framework\Model {
     class Context {}
     class Registry {}
-    
+}
 
+namespace Magento\Framework\Data {
+    interface OptionSourceInterface {
+        public function toOptionArray();
+    }
 }
 
 namespace Magento\Framework\App\Cache {

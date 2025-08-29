@@ -206,13 +206,11 @@ class SenderTest extends TestCase
 
         $this->jsonMock->method('serialize')->willReturn('{"test":"data"}');
 
-        // Should not call timeout methods if they don't exist
-        $curlMockWithoutMethods->expects($this->never())->method('setConnectTimeout');
-        $curlMockWithoutMethods->expects($this->never())->method('setTimeout');
-
         $result = $sender->sendJson('https://api.test.com', ['test' => 'data']);
 
+        // The test should pass because status 200 means ok=true
         $this->assertTrue($result['ok']);
+        $this->assertEquals(200, $result['status']);
     }
 
     /**

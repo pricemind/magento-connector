@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd"
+         bootstrap="./Test/Unit/bootstrap-standalone.php"
+         cacheResultFile=".phpunit.result.cache"
+         executionOrder="depends,defects"
+         forceCoversAnnotation="false"
+         beStrictAboutCoversAnnotation="false"
+         beStrictAboutOutputDuringTests="false"
+         beStrictAboutTodoAnnotatedTests="false"
+         failOnRisky="false"
+         failOnWarning="false"
+         verbose="true">
+    <testsuites>
+        <testsuite name="CI-Basic">
+            <file>./Test/Unit/SimpleValidationTest.php</file>
+            <file>./Test/Unit/BasicModuleTest.php</file>
+            <directory suffix="SenderTest.php">./Test/Unit/Model</directory>
+        </testsuite>
+    </testsuites>
+
+    <coverage processUncoveredFiles="true">
+        <include>
+            <directory suffix=".php">./app/code/Stellion/Pricemind</directory>
+        </include>
+        <exclude>
+            <directory>./app/code/Stellion/Pricemind/registration.php</directory>
+            <directory>./Test</directory>
+        </exclude>
+    </coverage>
+
+    <php>
+        <ini name="memory_limit" value="-1"/>
+        <ini name="date.timezone" value="UTC"/>
+    </php>
+</phpunit>

@@ -17,9 +17,18 @@ if (!defined('CURLOPT_CUSTOMREQUEST')) {
     define('CURLOPT_CUSTOMREQUEST', 10036);
 }
 
+// Mock Magento global functions
+if (!function_exists('__')) {
+    function __($text) {
+        return $text;
+    }
+}
+
 // Create simple mock classes for Magento framework
 require_once __DIR__ . '/Mocks/MagentoMocks.php';
 require_once __DIR__ . '/Mocks/ResourceMocks.php';
+require_once __DIR__ . '/Mocks/AdditionalMocks.php';
+require_once __DIR__ . '/Mocks/StorageMocks.php';
 
 // Set up autoloader for our classes
 spl_autoload_register(function ($className) {
