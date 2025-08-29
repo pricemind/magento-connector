@@ -1,0 +1,21 @@
+{
+    "name": "pricemind/magento-connector",
+    "description": "Tracks Magento price changes and sends them asynchronously to an external API.",
+    "type": "magento2-module",
+    "version": "1.0.0",
+    "license": ["MIT"],
+    "require": {
+        "php": ">=7.4",
+        "magento/framework": "*",
+        "magento/module-catalog": "*"
+    },
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Stellion\\Pricemind\\": ""
+        }
+    }
+}
+

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <event name="catalog_product_save_commit_after">
+        <observer name="stellion_pricemind_price_change_observer" instance="Stellion\Pricemind\Observer\ProductPriceChangeObserver"/>
+    </event>
+</config>
