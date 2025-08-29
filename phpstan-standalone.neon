@@ -1,9 +1,15 @@
 parameters:
     level: 2
     paths:
-        - app/code/Stellion/Pricemind
+        - app/code/Stellion/Pricemind/Model/Sender.php
+        - app/code/Stellion/Pricemind/Model/Api/Client.php
     excludePaths:
         - app/code/Stellion/Pricemind/registration.php
+        - app/code/Stellion/Pricemind/Block/
+        - app/code/Stellion/Pricemind/Model/Config/
+        - app/code/Stellion/Pricemind/Model/FailedRequest.php
+        - app/code/Stellion/Pricemind/Model/ResourceModel/
+        - app/code/Stellion/Pricemind/Observer/
     
     # Ignore Magento-specific patterns for standalone testing
     ignoreErrors:

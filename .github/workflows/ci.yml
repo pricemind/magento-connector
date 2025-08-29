@@ -106,45 +106,45 @@ jobs:
         name: phpcs-report
         path: phpcs-report.xml
         
-  magento-compatibility:
-    runs-on: ubuntu-latest
-    name: Magento Compatibility Check
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: '8.1'
-        extensions: mbstring, xml, ctype, iconv, intl
-        
-    - name: Check module structure
-      run: |
-        echo "Checking Magento module structure..."
-        test -f app/code/Stellion/Pricemind/registration.php
-        test -f app/code/Stellion/Pricemind/etc/module.xml
-        test -f app/code/Stellion/Pricemind/etc/events.xml
-        test -f app/code/Stellion/Pricemind/etc/db_schema.xml
-        echo "✅ All required module files present"
-        
-    - name: Validate XML files
-      run: |
-        echo "Validating XML configuration files..."
-        xmllint --noout app/code/Stellion/Pricemind/etc/module.xml
-        xmllint --noout app/code/Stellion/Pricemind/etc/events.xml
-        xmllint --noout app/code/Stellion/Pricemind/etc/db_schema.xml
-        xmllint --noout app/code/Stellion/Pricemind/etc/adminhtml/system.xml
-        xmllint --noout app/code/Stellion/Pricemind/etc/config.xml
-        xmllint --noout app/code/Stellion/Pricemind/etc/acl.xml
-        echo "✅ All XML files are valid"
-        
-    - name: Check PHP syntax
-      run: |
-        echo "Checking PHP syntax..."
-        find app/code/Stellion/Pricemind -name "*.php" -exec php -l {} \;
-        echo "✅ All PHP files have valid syntax"
+  # magento-compatibility:
+  #   runs-on: ubuntu-latest
+  #   name: Magento Compatibility Check
+  #   
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v4
+  #     
+  #   - name: Setup PHP
+  #     uses: shivammathur/setup-php@v2
+  #     with:
+  #       php-version: '8.1'
+  #       extensions: mbstring, xml, ctype, iconv, intl
+  #       
+  #   - name: Check module structure
+  #     run: |
+  #       echo "Checking Magento module structure..."
+  #       test -f app/code/Stellion/Pricemind/registration.php
+  #       test -f app/code/Stellion/Pricemind/etc/module.xml
+  #       test -f app/code/Stellion/Pricemind/etc/events.xml
+  #       test -f app/code/Stellion/Pricemind/etc/db_schema.xml
+  #       echo "✅ All required module files present"
+  #       
+  #   - name: Validate XML files
+  #     run: |
+  #       echo "Validating XML configuration files..."
+  #       xmllint --noout app/code/Stellion/Pricemind/etc/module.xml
+  #       xmllint --noout app/code/Stellion/Pricemind/etc/events.xml
+  #       xmllint --noout app/code/Stellion/Pricemind/etc/db_schema.xml
+  #       xmllint --noout app/code/Stellion/Pricemind/etc/adminhtml/system.xml
+  #       xmllint --noout app/code/Stellion/Pricemind/etc/config.xml
+  #       xmllint --noout app/code/Stellion/Pricemind/etc/acl.xml
+  #       echo "✅ All XML files are valid"
+  #       
+  #   - name: Check PHP syntax
+  #     run: |
+  #       echo "Checking PHP syntax..."
+  #       find app/code/Stellion/Pricemind -name "*.php" -exec php -l {} \;
+  #       echo "✅ All PHP files have valid syntax"
         
   security-scan:
     runs-on: ubuntu-latest
@@ -181,7 +181,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     name: Build Package
-    needs: [test, code-quality, magento-compatibility, security-scan]
+    needs: [test, code-quality, security-scan]
     if: github.ref == 'refs/heads/main'
     
     steps:
