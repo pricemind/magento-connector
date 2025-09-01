@@ -185,4 +185,42 @@ class Client
             return null;
         }
     }
+
+    /**
+     * Get channel integration configuration containing editable_custom_fields
+     */
+    public function getChannelIntegration(string $channelId, ?string $websiteCode = null): ?array
+    {
+        $apiKey = $this->getApiKey($websiteCode);
+        if ($apiKey === '') {
+            return null;
+        }
+
+        $url = $this->getBaseUrl($websiteCode) . '/v1/channels/' . rawurlencode($channelId) . '/integration';
+
+        try {
+            $this->curl->setHeaders([
+                'Content-Type' => 'application/json',
+                'X-API-Key' => $apiKey,
+            ]);
+            $this->curl->setTimeout(10);
+            $this->curl->get($url);
+
+            $status = (int)$this->curl->getStatus();
+            $body = (string)$this->curl->getBody();
+            if ($status < 200 || $status >= 300) {
+                $this->logger->warning('[Pricemind] Non-2xx fetching channel integration', ['status' => $status, 'body' => $body]);
+                return null;
+            }
+            $decoded = $this->json->unserialize($body);
+            if (!is_array($decoded) || !isset($decoded['data']) || !is_array($decoded['data'])) {
+                $this->logger->warning('[Pricemind] Unexpected channel integration response', ['body' => $body]);
+                return null;
+            }
+            return $decoded['data'];
+        } catch (\Throwable $e) {
+            $this->logger->error('[Pricemind] Error fetching channel integration: ' . $e->getMessage());
+            return null;
+        }
+    }
 }

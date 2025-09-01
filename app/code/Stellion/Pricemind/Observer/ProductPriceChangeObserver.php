@@ -194,5 +194,97 @@ class ProductPriceChangeObserver implements ObserverInterface
                 $this->logger->warning('[Stellion_Pricemind] Failed to update special date custom fields: ' . $e->getMessage());
             }
         }
+
+        // Handle editable custom fields from channel integration config
+        $this->syncEditableCustomFields($product, $channelId, $websiteCode, $baseUrl, $apiKey);
+    }
+
+    /**
+     * Sync editable custom fields based on channel integration configuration
+     */
+    private function syncEditableCustomFields(Product $product, string $channelId, string $websiteCode, string $baseUrl, string $apiKey): void
+    {
+        try {
+            // Get channel integration config
+            $channelIntegration = $this->apiClient->getChannelIntegration($channelId, $websiteCode);
+            if (!$channelIntegration || !isset($channelIntegration['config'])) {
+                return; // No integration config found
+            }
+
+            $config = $channelIntegration['config'];
+            
+            // Extract editable_custom_fields from Magento config
+            $editableFields = [];
+            if (isset($config['magento']['editable_custom_fields']) && is_array($config['magento']['editable_custom_fields'])) {
+                $editableFields = $config['magento']['editable_custom_fields'];
+            }
+
+            if (empty($editableFields)) {
+                return; // No editable fields configured
+            }
+
+            $channelIdInt = (int)$channelId;
+            $sku = (string)$product->getSku();
+            $endpointCF = rtrim($baseUrl, '/') . '/v1/custom-fields';
+
+            // Send each editable custom field
+            foreach ($editableFields as $fieldName) {
+                if (!is_string($fieldName) || $fieldName === '') {
+                    continue;
+                }
+
+                // Get current value from product
+                $value = $this->getProductAttributeValue($product, $fieldName);
+                if ($value === null) {
+                    continue; // Skip if attribute doesn't exist or has no value
+                }
+
+                $payloadCF = [
+                    'channel_id' => $channelIdInt,
+                    'machine_name' => $fieldName,
+                    'product_sku' => $sku,
+                    'value' => (string)$value,
+                ];
+
+                $res = $this->sender->sendJson($endpointCF, $payloadCF, ['X-API-Key' => $apiKey], 1, 2, 'PUT');
+                if (!$res['ok']) {
+                    try {
+                        $failed = $this->failedRequestFactory->create();
+                        $failed->setData([
+                            'endpoint' => $endpointCF,
+                            'method' => 'PUT',
+                            'headers' => json_encode(['X-API-Key' => '***']),
+                            'payload' => json_encode($payloadCF),
+                            'error' => (string)$res['body'],
+                            'retry_count' => 0,
+                            'status' => 0,
+                            'next_attempt_at' => null,
+                        ]);
+                        $this->failedRequestResource->save($failed);
+                    } catch (\Throwable $e) {
+                        $this->logger->error('[Stellion_Pricemind] Failed to persist failed request for custom field: ' . $e->getMessage());
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            $this->logger->warning('[Stellion_Pricemind] Failed to sync editable custom fields: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Get product attribute value safely
+     */
+    private function getProductAttributeValue(Product $product, string $attributeCode): ?string
+    {
+        try {
+            $value = $product->getData($attributeCode);
+            if ($value === null || $value === '') {
+                return null;
+            }
+            return (string)$value;
+        } catch (\Throwable $e) {
+            $this->logger->debug('[Stellion_Pricemind] Could not get attribute value for: ' . $attributeCode . ' - ' . $e->getMessage());
+            return null;
+        }
     }
 }
