@@ -108,13 +108,13 @@ class ProductPriceChangeObserver implements ObserverInterface
     {
         $endpoint = rtrim($baseUrl, '/') . '/v1/channels/' . rawurlencode($channelId) . '/prices';
 
-        // Send price update if price changed
-        if ($priceChanged) {
+        // Send price update if price changed or special price changed
+        if ($priceChanged || $specialChanged) {
             $payload = [
                 'product_sku' => (string)$product->getSku(),
                 'price' => (string)$newPrice,
                 'currency' => (string)$store->getBaseCurrencyCode(),
-                'includes_tax' => true,
+                'includes_tax' => false,
             ];
 
             // Include special_price when it changes. Send null to clear when removed.
