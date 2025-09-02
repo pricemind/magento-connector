@@ -8,7 +8,7 @@
     "authors": [
         {
             "name": "Pricemind Team",
-            "email": "support@pricemind.io"
+            "email": "support@pricemind.ai"
         }
     ],
     "require": {
@@ -59,7 +59,7 @@
         }
     },
     "support": {
-        "email": "support@pricemind.io",
+        "email": "support@pricemind.ai",
         "docs": "https://github.com/pricemind/magento-connector/blob/main/README.md",
         "issues": "https://github.com/pricemind/magento-connector/issues",
         "source": "https://github.com/pricemind/magento-connector"

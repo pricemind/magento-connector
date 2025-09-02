@@ -95,7 +95,7 @@ class Client
                 'Content-Type' => 'application/json',
                 'X-API-Key' => $apiKey,
             ]);
-            $this->curl->setTimeout(10);
+            $this->curl->setTimeout(30);
             $this->curl->get($url);
 
             $status = (int)$this->curl->getStatus();
@@ -132,7 +132,7 @@ class Client
                 'Content-Type' => 'application/json',
                 'X-API-Key' => $apiKey,
             ]);
-            $this->curl->setTimeout(10);
+            $this->curl->setTimeout(30);
             $this->curl->get($url);
 
             $status = (int)$this->curl->getStatus();
@@ -165,7 +165,7 @@ class Client
                 'Content-Type' => 'application/json',
                 'X-API-Key' => $apiKey,
             ]);
-            $this->curl->setTimeout(10);
+            $this->curl->setTimeout(30);
             $this->curl->get($url);
 
             $status = (int)$this->curl->getStatus();
@@ -203,7 +203,7 @@ class Client
                 'Content-Type' => 'application/json',
                 'X-API-Key' => $apiKey,
             ]);
-            $this->curl->setTimeout(10);
+            $this->curl->setTimeout(30);
             $this->curl->get($url);
 
             $status = (int)$this->curl->getStatus();

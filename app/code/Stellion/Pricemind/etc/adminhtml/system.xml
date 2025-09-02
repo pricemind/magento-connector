@@ -24,7 +24,6 @@
                     <source_model>Stellion\Pricemind\Model\Config\Source\Channels</source_model>
                     <frontend_model>Stellion\Pricemind\Block\Adminhtml\System\Config\Form\Field\Channel</frontend_model>
                     <backend_model>Stellion\Pricemind\Model\Config\Backend\Channel</backend_model>
-                    <validate>required-entry</validate>
                     <comment>Save after setting API key to load channels.</comment>
                 </field>
                 <field id="source_is_magento" translate="label" type="label" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="0">

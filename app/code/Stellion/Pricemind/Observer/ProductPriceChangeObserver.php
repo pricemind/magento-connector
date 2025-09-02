@@ -53,6 +53,8 @@ class ProductPriceChangeObserver implements ObserverInterface
     {
         /** @var Product $product */
         $product = $observer->getEvent()->getProduct();
+        
+        $this->logger->info('[Stellion_Pricemind] Observer triggered for product ID: ' . $product->getId() . ', SKU: ' . $product->getSku());
 
         $origPrice = $product->getOrigData('price');
         $newPrice = $product->getData('price');
@@ -67,9 +69,9 @@ class ProductPriceChangeObserver implements ObserverInterface
         $specialChanged = (string)$origSpecial !== (string)$newSpecial;
         $fromChanged = (string)$origFrom !== (string)$newFrom;
         $toChanged = (string)$origTo !== (string)$newTo;
-        if (!$priceChanged && !$specialChanged && !$fromChanged && !$toChanged) {
-            return; // No relevant change
-        }
+        
+        // Check if we have any price-related changes to process
+        $hasPriceChanges = $priceChanged || $specialChanged || $fromChanged || $toChanged;
 
         $store = $this->storeManager->getStore((int)$product->getStoreId());
         $websiteCode = (string)$store->getWebsite()->getCode();
@@ -79,47 +81,72 @@ class ProductPriceChangeObserver implements ObserverInterface
         $channelId = (string)$this->scopeConfig->getValue('stellion_pricemind/api/channel_id', ScopeInterface::SCOPE_WEBSITE, $websiteCode);
 
         if ($apiKey === '' || $channelId === '') {
+            $this->logger->info('[Stellion_Pricemind] Skipping product ' . $product->getSku() . ' - not configured (apiKey: ' . ($apiKey === '' ? 'empty' : 'present') . ', channelId: ' . ($channelId === '' ? 'empty' : $channelId) . ')');
             return; // not configured
         }
 
-        $endpoint = rtrim($baseUrl, '/') . '/v1/channels/' . rawurlencode($channelId) . '/prices';
-
-        $payload = [
-            'product_sku' => (string)$product->getSku(),
-            'price' => (string)$newPrice,
-            'currency' => (string)$store->getBaseCurrencyCode(),
-            'includes_tax' => true,
-        ];
-
-        // Include special_price when it changes. Send null to clear when removed.
-        if ($specialChanged) {
-            if ($newSpecial !== null && $newSpecial !== '' && (float)$newSpecial > 0) {
-                $payload['special_price'] = (string)$newSpecial;
-            } else {
-                $payload['special_price'] = null;
-            }
+        // Process price changes if any occurred
+        if ($hasPriceChanges) {
+            $this->logger->info('[Stellion_Pricemind] Processing price changes for product ' . $product->getSku());
+            $this->processPriceChanges($product, $priceChanged, $specialChanged, $fromChanged, $toChanged, 
+                                     $newPrice, $newSpecial, $newFrom, $newTo, $store, $baseUrl, $apiKey, $channelId);
+        } else {
+            $this->logger->info('[Stellion_Pricemind] No price changes detected for product ' . $product->getSku());
         }
 
-        $result = $this->sender->sendJson($endpoint, $payload, [
-            'X-API-Key' => $apiKey,
-        ], 1, 2);
+        // Always process editable custom fields (they might have changed even if prices didn't)
+        $this->logger->info('[Stellion_Pricemind] Processing editable custom fields for product ' . $product->getSku());
+        $this->syncEditableCustomFields($product, $channelId, $websiteCode, $baseUrl, $apiKey);
+    }
 
-        if (!$result['ok']) {
-            try {
-                $failed = $this->failedRequestFactory->create();
-                $failed->setData([
-                    'endpoint' => $endpoint,
-                    'method' => 'POST',
-                    'headers' => json_encode(['X-API-Key' => '***']),
-                    'payload' => json_encode($payload),
-                    'error' => (string)$result['body'],
-                    'retry_count' => 0,
-                    'status' => 0,
-                    'next_attempt_at' => null,
-                ]);
-                $this->failedRequestResource->save($failed);
-            } catch (\Throwable $e) {
-                $this->logger->error('[Stellion_Pricemind] Failed to persist failed request: ' . $e->getMessage());
+    /**
+     * Process price-related changes
+     */
+    private function processPriceChanges(Product $product, bool $priceChanged, bool $specialChanged, 
+                                       bool $fromChanged, bool $toChanged, $newPrice, $newSpecial, 
+                                       $newFrom, $newTo, $store, string $baseUrl, string $apiKey, string $channelId): void
+    {
+        $endpoint = rtrim($baseUrl, '/') . '/v1/channels/' . rawurlencode($channelId) . '/prices';
+
+        // Send price update if price changed
+        if ($priceChanged) {
+            $payload = [
+                'product_sku' => (string)$product->getSku(),
+                'price' => (string)$newPrice,
+                'currency' => (string)$store->getBaseCurrencyCode(),
+                'includes_tax' => true,
+            ];
+
+            // Include special_price when it changes. Send null to clear when removed.
+            if ($specialChanged) {
+                if ($newSpecial !== null && $newSpecial !== '' && (float)$newSpecial > 0) {
+                    $payload['special_price'] = (string)$newSpecial;
+                } else {
+                    $payload['special_price'] = null;
+                }
+            }
+
+            $result = $this->sender->sendJson($endpoint, $payload, [
+                'X-API-Key' => $apiKey,
+            ], 5, 15);
+
+            if (!$result['ok']) {
+                try {
+                    $failed = $this->failedRequestFactory->create();
+                    $failed->setData([
+                        'endpoint' => $endpoint,
+                        'method' => 'POST',
+                        'headers' => json_encode(['X-API-Key' => '***']),
+                        'payload' => json_encode($payload),
+                        'error' => (string)$result['body'],
+                        'retry_count' => 0,
+                        'status' => 0,
+                        'next_attempt_at' => null,
+                    ]);
+                    $this->failedRequestResource->save($failed);
+                } catch (\Throwable $e) {
+                    $this->logger->error('[Stellion_Pricemind] Failed to persist failed request: ' . $e->getMessage());
+                }
             }
         }
 
@@ -141,7 +168,7 @@ class ProductPriceChangeObserver implements ObserverInterface
                         'value' => (string)$newFrom,
                     ];
                     $endpointCF = rtrim($baseUrl, '/') . '/v1/custom-fields';
-                    $res = $this->sender->sendJson($endpointCF, $payloadCF, ['X-API-Key' => $apiKey], 1, 2, 'PUT');
+                    $res = $this->sender->sendJson($endpointCF, $payloadCF, ['X-API-Key' => $apiKey], 5, 15, 'PUT');
                     if (!$res['ok']) {
                         try {
                             $failed = $this->failedRequestFactory->create();
@@ -170,7 +197,7 @@ class ProductPriceChangeObserver implements ObserverInterface
                         'value' => (string)$newTo,
                     ];
                     $endpointCF = rtrim($baseUrl, '/') . '/v1/custom-fields';
-                    $res = $this->sender->sendJson($endpointCF, $payloadCF, ['X-API-Key' => $apiKey], 1, 2, 'PUT');
+                    $res = $this->sender->sendJson($endpointCF, $payloadCF, ['X-API-Key' => $apiKey], 5, 15, 'PUT');
                     if (!$res['ok']) {
                         try {
                             $failed = $this->failedRequestFactory->create();
@@ -194,9 +221,6 @@ class ProductPriceChangeObserver implements ObserverInterface
                 $this->logger->warning('[Stellion_Pricemind] Failed to update special date custom fields: ' . $e->getMessage());
             }
         }
-
-        // Handle editable custom fields from channel integration config
-        $this->syncEditableCustomFields($product, $channelId, $websiteCode, $baseUrl, $apiKey);
     }
 
     /**
@@ -206,8 +230,10 @@ class ProductPriceChangeObserver implements ObserverInterface
     {
         try {
             // Get channel integration config
+            $this->logger->info('[Stellion_Pricemind] Fetching channel integration config for channel: ' . $channelId);
             $channelIntegration = $this->apiClient->getChannelIntegration($channelId, $websiteCode);
             if (!$channelIntegration || !isset($channelIntegration['config'])) {
+                $this->logger->info('[Stellion_Pricemind] No integration config found for channel: ' . $channelId);
                 return; // No integration config found
             }
 
@@ -219,7 +245,10 @@ class ProductPriceChangeObserver implements ObserverInterface
                 $editableFields = $config['magento']['editable_custom_fields'];
             }
 
+            $this->logger->info('[Stellion_Pricemind] Found editable fields configuration: ' . json_encode($editableFields));
+
             if (empty($editableFields)) {
+                $this->logger->info('[Stellion_Pricemind] No editable fields configured for channel: ' . $channelId);
                 return; // No editable fields configured
             }
 
@@ -230,11 +259,13 @@ class ProductPriceChangeObserver implements ObserverInterface
             // Send each editable custom field
             foreach ($editableFields as $fieldName) {
                 if (!is_string($fieldName) || $fieldName === '') {
+                    $this->logger->info('[Stellion_Pricemind] Skipping invalid field name: ' . json_encode($fieldName));
                     continue;
                 }
 
                 // Get current value from product
                 $value = $this->getProductAttributeValue($product, $fieldName);
+                $this->logger->info('[Stellion_Pricemind] Field "' . $fieldName . '" value for product ' . $product->getSku() . ': ' . ($value === null ? 'null' : '"' . $value . '"'));
                 if ($value === null) {
                     continue; // Skip if attribute doesn't exist or has no value
                 }
@@ -246,6 +277,7 @@ class ProductPriceChangeObserver implements ObserverInterface
                     'value' => (string)$value,
                 ];
 
+                $this->logger->info('[Stellion_Pricemind] Sending custom field update: ' . json_encode($payloadCF));
                 $res = $this->sender->sendJson($endpointCF, $payloadCF, ['X-API-Key' => $apiKey], 1, 2, 'PUT');
                 if (!$res['ok']) {
                     try {
@@ -283,7 +315,7 @@ class ProductPriceChangeObserver implements ObserverInterface
             }
             return (string)$value;
         } catch (\Throwable $e) {
-            $this->logger->debug('[Stellion_Pricemind] Could not get attribute value for: ' . $attributeCode . ' - ' . $e->getMessage());
+            $this->logger->info('[Stellion_Pricemind] Could not get attribute value for: ' . $attributeCode . ' - ' . $e->getMessage());
             return null;
         }
     }
